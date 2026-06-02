@@ -16,15 +16,12 @@ else
   echo "$UUID" > "$UUID_FILE"
 fi
 
-INBOUND_PORT="${PORT:-10086}"
-WS_PATH="${WS_PATH:-/?ed=2048}"
+INBOUND_PORT="${PORT:-3000}"
+WS_PATH="/fengyue"
 
-if [ -n "${VMESS_HOST:-}" ]; then
-  HOST="$VMESS_HOST"
-  PLATFORM=""
-elif [ -n "${DOMAIN:-}" ]; then
+PLATFORM=""
+if [ -n "${DOMAIN:-}" ]; then
   HOST="$DOMAIN"
-  PLATFORM=""
 elif [ -n "${VCAP_APPLICATION:-}" ]; then
   HOST="$(echo "$VCAP_APPLICATION" | jq -r '.application_uris[0] // empty' 2>/dev/null || true)"
   if [ -z "$HOST" ]; then
@@ -49,17 +46,20 @@ else
   HOST="$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null || \
           curl -s --max-time 5 https://ip.sb 2>/dev/null || \
           echo 'your-domain.com')"
-  PLATFORM=""
 fi
 
-COUNTRY="$(curl -s --max-time 5 https://ipapi.co/country 2>/dev/null || echo '')"
+COUNTRY="$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null || \
+           curl -s --max-time 5 https://ifconfig.co/country-iso 2>/dev/null || \
+           echo '')"
 
-if [ -n "${PS_NAME:-}" ]; then
-  PS_NAME="$PS_NAME"
+if [ -n "${NAME:-}" ]; then
+  NAME="$NAME"
 elif [ -n "$PLATFORM" ]; then
-  PS_NAME="${COUNTRY:+${COUNTRY}-}${PLATFORM}"
+  NAME="${COUNTRY:+${COUNTRY}-}${PLATFORM}"
 else
-  ASN_ORG="$(curl -s --max-time 5 https://ipapi.co/org 2>/dev/null || echo '')"
+  ASN_ORG="$(curl -s --max-time 5 https://ipinfo.io/org 2>/dev/null || \
+             curl -s --max-time 5 https://ifconfig.co/org 2>/dev/null || \
+             echo '')"
   ASN_ORG="$(echo "$ASN_ORG" \
     | sed 's/^AS[0-9]* //' \
     | sed 's/,\? *Inc\.$//' \
@@ -69,11 +69,11 @@ else
     | sed 's/ *$//' \
     | cut -c1-20)"
   if [ -n "$COUNTRY" ] && [ -n "$ASN_ORG" ]; then
-    PS_NAME="${COUNTRY}-${ASN_ORG}"
+    NAME="${COUNTRY}-${ASN_ORG}"
   elif [ -n "$COUNTRY" ]; then
-    PS_NAME="${COUNTRY}-mous"
+    NAME="${COUNTRY}-mous"
   else
-    PS_NAME="mous"
+    NAME="mous"
   fi
 fi
 
@@ -99,7 +99,7 @@ EOF
 VMESS_JSON="$(cat <<EOT
 {
   "v": "2",
-  "ps": "${PS_NAME}",
+  "ps": "${NAME}",
   "add": "${HOST}",
   "port": "443",
   "id": "${UUID}",
