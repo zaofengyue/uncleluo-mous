@@ -16,7 +16,8 @@ else
   echo "$UUID" > "$UUID_FILE"
 fi
 
-INBOUND_PORT="${PORT:-3000}"
+NGINX_PORT="${PORT:-8080}"
+V2RAY_PORT="3000"
 WS_PATH="/fengyue"
 
 PLATFORM=""
@@ -81,8 +82,8 @@ cat > /etc/v2ray-config.json <<EOF
 {
   "log": { "loglevel": "warning" },
   "inbounds": [{
-    "port": ${INBOUND_PORT},
-    "listen": "0.0.0.0",
+    "port": ${V2RAY_PORT},
+    "listen": "127.0.0.1",
     "protocol": "vmess",
     "settings": {
       "clients": [{ "id": "${UUID}", "alterId": 0 }]
@@ -119,6 +120,40 @@ VMESS_LINK="vmess://$(printf '%s' "$VMESS_JSON" | base64 -w 0 2>/dev/null || pri
 echo "================= VMESS ================="
 echo "$VMESS_LINK"
 echo "========================================="
+
+SUB_CONTENT="$(printf '%s' "$VMESS_LINK" | base64 -w 0 2>/dev/null || printf '%s' "$VMESS_LINK" | base64)"
+
+mkdir -p /var/www/html/sub
+cp /index.html /var/www/html/index.html
+printf '%s' "$SUB_CONTENT" > /var/www/html/sub/index.html
+
+cat > /etc/nginx/sites-available/default <<NGINX
+server {
+    listen ${NGINX_PORT};
+    server_name _;
+
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location /sub {
+        root /var/www/html;
+        index index.html;
+        default_type text/plain;
+    }
+
+    location ${WS_PATH} {
+        proxy_pass http://127.0.0.1:${V2RAY_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+    }
+}
+NGINX
+
+nginx -g 'daemon off;' &
 
 V2RAY_BIN=""
 if command -v v2ray >/dev/null 2>&1; then
