@@ -19,6 +19,8 @@ fi
 NGINX_PORT="${PORT:-8080}"
 V2RAY_PORT="3000"
 WS_PATH="/fengyue"
+SUB_RAW="${SUB:-sub}"
+SUB_PATH="/${SUB_RAW#/}"
 
 PLATFORM=""
 if [ -n "${DOMAIN:-}" ]; then
@@ -137,8 +139,8 @@ server {
         index index.html;
     }
 
-    location /sub {
-        root /var/www/html;
+    location ${SUB_PATH} {
+        alias /var/www/html/sub/;
         index index.html;
         default_type text/plain;
     }
