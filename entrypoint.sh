@@ -16,7 +16,7 @@ else
   echo "$UUID" > "$UUID_FILE"
 fi
 
-INBOUND_PORT="${PORT:-3000}"
+INBOUND_PORT="${PORT:-10086}"
 WS_PATH="${WS_PATH:-/?ed=2048}"
 
 if [ -n "${VMESS_HOST:-}" ]; then
