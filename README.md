@@ -18,17 +18,6 @@ docker run -d \
   ghcr.io/zaofengyue/mous:latest
 ```
 
-## 支持平台
-
-| 平台 | 域名自动识别 |
-|---|---|
-| Railway | ✅ |
-| Render | ✅ |
-| Zeabur | ✅ |
-| Koyeb | ✅ |
-| CloudFoundry | ✅ |
-| 其他 VPS / 容器平台 | 自动获取公网 IP |
-
 ## 环境变量
 
 | 变量名 | 说明 | 默认值 |
