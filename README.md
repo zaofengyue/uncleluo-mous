@@ -25,7 +25,7 @@ docker run -d \
 | `UUID` | 节点唯一ID | 自动生成 |
 | `PORT` | 监听端口 | `3000` |
 | `DOMAIN` | 手动指定域名 | 自动识别 |
-| `NAME` | 手动指定节点名称 | 自动识别国家+平台/ASN |
+| `NAME` | 手动指定节点名称 | 自动识别国家 |
 
 ## 使用cloudflare workers 或 snippets 反代域名给节点套cdn加速
 
